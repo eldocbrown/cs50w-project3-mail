@@ -35,6 +35,56 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+  // Get latests mails from mailbox and render them
+  fetch(`/emails/${mailbox}`)
+  .then(response => response.json())
+  .then(data => {
+      data.forEach(addMail);
+  })
+}
+
+function addMail(contents) {
+  // Create new email
+  // email container
+  const email = document.createElement('div');
+  email.className = 'email d-flex flex-row border border-secondary rounded';
+  if (!contents.read) {
+    email.className += ' bg-white'; // email not read
+  } else {
+    email.className += ' bg-light'; // email read
+  }
+  email.style.padding = '5px';
+  email.style.marginBottom = '1px';
+  //email.style.justifyContent = 'space-between'
+  // address container
+  const address = document.createElement('div');
+  address.className = 'address';
+  address.innerHTML = contents.sender;
+  address.style.minWidth = '150px';
+  address.style.maxWidth = '150px';
+  address.style.overflow = 'hidden';
+  email.append(address);
+  // content container
+  const content = document.createElement('div');
+  content.className = 'd-flex justify-content-between';
+  content.style.width = '100%';
+  content.style.paddingLeft = '50px';
+  email.append(content);
+  // address container
+  const subject = document.createElement('div');
+  subject.className = 'subject';
+  subject.innerHTML = contents.subject;
+  subject.style.overflow = 'hidden';
+  content.append(subject);
+  // address container
+  const timestamp = document.createElement('div');
+  timestamp.className = 'timestamp';
+  timestamp.innerHTML = contents.timestamp;
+  content.append(timestamp);
+
+  // Add post to DOM
+  document.querySelector('#emails-view').append(email);
 }
 
 function submit_email(e) {
