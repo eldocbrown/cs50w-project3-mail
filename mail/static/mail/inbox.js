@@ -11,6 +11,14 @@ document.addEventListener('DOMContentLoaded', function() {
     submit_email(e);
   });
 
+  document.querySelector('#archiverButton').addEventListener('click', (e) => {
+    let action = 'archive';
+    if (document.querySelector('#email-archived').dataset.archived) {
+      action = 'unarchive';
+    }
+    archiver(document.querySelector('#email-id').dataset.id, action);
+  });
+
   // By default, load the inbox
   load_mailbox('inbox');
 });
@@ -19,6 +27,7 @@ function compose_email() {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
   // Clear out composition fields
@@ -31,6 +40,7 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
+  document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
 
   // Show the mailbox name
@@ -48,19 +58,28 @@ function addMail(contents) {
   // Create new email
   // email container
   const email = document.createElement('div');
+  email.setAttribute('id', contents.id);
   email.className = 'email d-flex flex-row border border-secondary rounded';
   if (!contents.read) {
-    email.className += ' bg-white'; // email not read
+    email.classList.add('bg-white'); // email not read
   } else {
-    email.className += ' bg-light'; // email read
+    email.classList.add('bg-light'); // email read
   }
   email.style.padding = '5px';
   email.style.marginBottom = '1px';
-  //email.style.justifyContent = 'space-between'
+  email.style.cursor = 'pointer';
+    // add click event handler to view
+  email.addEventListener('click', (e) => {
+    view_email(e);
+  });
   // address container
   const address = document.createElement('div');
   address.className = 'address';
-  address.innerHTML = contents.sender;
+  if (contents.sender === document.getElementById('accountHeading').textContent) {
+    address.innerHTML = contents.recipients; // email sent from current account
+  } else {
+    address.innerHTML = contents.sender;
+  }
   address.style.minWidth = '150px';
   address.style.maxWidth = '150px';
   address.style.overflow = 'hidden';
@@ -76,6 +95,7 @@ function addMail(contents) {
   subject.className = 'subject';
   subject.innerHTML = contents.subject;
   subject.style.overflow = 'hidden';
+  subject.style.whiteSpace='nowrap';
   content.append(subject);
   // address container
   const timestamp = document.createElement('div');
@@ -115,6 +135,72 @@ function submit_email(e) {
   .catch((error) => {
     console.error('Error!:', error);
     alert(error);
+    load_mailbox('inbox');
+  });
+}
+
+function markRead(id) {
+  fetch(`/emails/${id}`, {
+  method: 'PUT',
+  body: JSON.stringify({
+      read: true
+    })
+  })
+  .then(() => {
+    const div = document.getElementById(id);
+    div.classList.remove('bg-white');
+    div.classList.add('bg-light');
+  });
+}
+
+function view_email(event) {
+  const id = event.currentTarget.id;
+  fetch(`/emails/${id}`)
+  .then(response => response.json())
+  .then(email => {
+    markRead(id)
+
+    document.querySelector('#email-from').innerHTML = `<strong> From: </strong>${email.sender}`;
+    document.querySelector('#email-to').innerHTML = `<strong> To: </strong>${email.recipients}`;
+    document.querySelector('#email-subject').innerHTML = `<strong> Subject: </strong>${email.subject}`;
+    document.querySelector('#email-timestamp').innerHTML = `<strong> Timestamp: </strong>${email.timestamp}`;
+    document.querySelector('#email-body').innerHTML = email.body;
+    document.querySelector('#email-id').setAttribute('data-id', email.id);
+    document.querySelector('#email-archived').setAttribute('data-archived', email.archived);
+    document.querySelector('#email-read').setAttribute('data-read', email.read);
+
+    // Show the mailbox and hide other views
+    document.querySelector('#emails-view').style.display = 'none';
+    document.querySelector('#email-view').style.display = 'block';
+    document.querySelector('#compose-view').style.display = 'none';
+
+    // Change archiver button if email is Archived or Unarchived
+    if (email.archived) {
+      document.querySelector('#archiverButton').innerHTML = 'Unarchive';
+    } else {
+      document.querySelector('#archiverButton').innerHTML = 'Archive';
+    }
+
+    // Cannot archive sent emails
+    if (email.sender === document.getElementById('accountHeading').textContent) {
+      document.querySelector('#archiverButton').style.display = 'none';
+    } else {
+      document.querySelector('#archiverButton').style.display = 'block';
+    }
+
+  });
+}
+
+function archiver(id, action) {
+  let archive = true;
+  if (action === 'unarchive') {archive = false;}
+  fetch(`/emails/${id}`, {
+  method: 'PUT',
+  body: JSON.stringify({
+      archived: archive
+    })
+  })
+  .then(() => {
     load_mailbox('inbox');
   });
 }

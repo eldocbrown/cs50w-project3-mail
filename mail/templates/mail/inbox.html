@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block body %}
-    <h2>{{ request.user.email }}</h2>
+    <h2 id="accountHeading">{{ request.user.email }}</h2>
 
     <button class="btn btn-sm btn-outline-primary" id="inbox">Inbox</button>
     <button class="btn btn-sm btn-outline-primary" id="compose">Compose</button>
@@ -12,6 +12,30 @@
     <hr>
 
     <div id="emails-view">
+    </div>
+
+    <div id="email-view">
+      <div id="email-id">
+      </div>
+      <div id="email-archived">
+      </div>
+      <div id="email-read">
+      </div>
+      <div id="email-from">
+      </div>
+      <div id="email-to">
+      </div>
+      <div id="email-subject">
+      </div>
+      <div id="email-timestamp">
+      </div>
+      <div class="d-flex flex-row mt-2">
+        <button class="btn btn-sm btn-primary mr-2" type="button" name="button">Reply</button>
+        <button id="archiverButton" class="btn btn-sm btn-outline-secondary" type="button">Archive</button>
+      </div>
+      <hr>
+      <div id="email-body" class="text-wrap">
+      </div>
     </div>
 
     <div id="compose-view">
