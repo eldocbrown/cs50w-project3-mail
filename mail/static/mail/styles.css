@@ -7,3 +7,7 @@ textarea {
 #compose-submit {
   margin-top: 10px;
 }
+
+#email-body {
+  white-space: pre-wrap;
+}

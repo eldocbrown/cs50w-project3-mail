@@ -19,9 +19,41 @@ document.addEventListener('DOMContentLoaded', function() {
     archiver(document.querySelector('#email-id').dataset.id, action);
   });
 
+  document.querySelector('#replyButton').addEventListener('click', (e) => {
+    compose_email();
+
+    reply_email(
+      event.currentTarget.dataset.to,
+      event.currentTarget.dataset.subject,
+      event.currentTarget.dataset.timestamp,
+      document.querySelector('#email-body').innerHTML
+    );
+  });
+
   // By default, load the inbox
   load_mailbox('inbox');
 });
+
+function reply_email(to, subject, prev_timestamp, body) {
+  document.querySelector('#compose-recipients').value = to;
+  // Check if it already starts with "Re:"
+  if (!subject.startsWith('Re: ')) {
+    document.querySelector('#compose-subject').value = `Re: ${subject}`;
+  } else {
+    document.querySelector('#compose-subject').value = subject;
+  }
+  const from = document.getElementById('accountHeading').textContent;
+  const bodyElement = document.querySelector('#compose-body');
+  bodyElement.value = `\n\nOn ${prev_timestamp} ${from} wrote:\n${body}`;
+  // Focus on body text input
+  bodyElement.focus();
+  //Scroll at the top of body text input
+  bodyElement.scrollTop = 0;
+  // Set cursor at beginning;
+  bodyElement.setSelectionRange(0, 0);
+
+
+}
 
 function compose_email() {
 
@@ -161,9 +193,12 @@ function view_email(event) {
     markRead(id)
 
     document.querySelector('#email-from').innerHTML = `<strong> From: </strong>${email.sender}`;
+    document.querySelector('#replyButton').setAttribute('data-to', email.sender);
     document.querySelector('#email-to').innerHTML = `<strong> To: </strong>${email.recipients}`;
     document.querySelector('#email-subject').innerHTML = `<strong> Subject: </strong>${email.subject}`;
+    document.querySelector('#replyButton').setAttribute('data-subject', email.subject);
     document.querySelector('#email-timestamp').innerHTML = `<strong> Timestamp: </strong>${email.timestamp}`;
+    document.querySelector('#replyButton').setAttribute('data-timestamp', email.timestamp);
     document.querySelector('#email-body').innerHTML = email.body;
     document.querySelector('#email-id').setAttribute('data-id', email.id);
     document.querySelector('#email-archived').setAttribute('data-archived', email.archived);
