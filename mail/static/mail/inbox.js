@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.querySelector('#archiverButton').addEventListener('click', (e) => {
     let action = 'archive';
-    if (document.querySelector('#email-archived').dataset.archived) {
+    if (document.querySelector('#email-archived').dataset.archived === 'true') {
       action = 'unarchive';
     }
     archiver(document.querySelector('#email-id').dataset.id, action);
